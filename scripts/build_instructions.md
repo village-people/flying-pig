@@ -25,6 +25,7 @@ a `gcc` version that is not too new. I compiled on Ubuntu 17.04 using
 
 Clone the project: `https://github.com/Microsoft/malmo`.
 
+Download xs3p.xsl from this repo and copy to ..malmo/build/Schemas & malmo/Schemas
 ```
 export MALMO_XSD_PATH=/path/to/malmo/Schemas
 
