@@ -8,7 +8,7 @@ def get_args():
                       help='The type of baseline to run.')
     args.add_argument('-e', '--epochs', type=int, default=5,
                       help='Number of epochs to run.')
-    args.add_argument('-es', '--epoch_steps', type=int, default=100,
+    args.add_argument('-es', '--epoch_steps', type=int, default=25,
                       help='Max no of steps per epoch.')
     args.add_argument('endpoints', nargs='*',
                       default=['127.0.0.1:10000', '127.0.0.1:10001'],

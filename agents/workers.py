@@ -6,14 +6,14 @@ from pig_chase.agent import PigChaseChallengeAgent
 from pig_chase.common import ENV_ACTIONS
 
 from agents import get_agent
-from utils.utils import parse_clients_args, visualize_training
+from utils.utils import parse_clients_args
 
 
-def train_our_agent(name, endpoints, role, visualizer, cmdl):
+def train_our_agent(name, role, cmdl):
 
     # builder = PigChaseSymbolicStateBuilder()
     builder = PigChaseTopDownStateBuilder()
-    env = PigChaseEnvironment(parse_clients_args(endpoints), builder,
+    env = PigChaseEnvironment(parse_clients_args(cmdl.endpoints), builder,
                               role=role, randomize_positions=True)
     agent = get_agent(cmdl.type)(name, ENV_ACTIONS)
 
@@ -25,19 +25,19 @@ def train_our_agent(name, endpoints, role, visualizer, cmdl):
 
     start_time = time.time()
 
+    print("No of epochs: %d. Max no of steps/epoch: %d" %
+          (cmdl.epochs, cmdl.epoch_steps))
+
     max_training_steps = cmdl.epoch_steps * cmdl.epochs
     for step in range(1, max_training_steps+1):
 
         # check if env needs reset
         if env.done:
-
-            if visualizer:
-                visualize_training(visualizer, step, viz_rewards)
-
             obs = env.reset()
             ep_cnt += 1
-            print("Ep: %d | Rw: %d" % (ep_cnt, sum(viz_rewards)))
-            viz_rewards = []
+            if ep_cnt % 100 == 0:
+                print("Ep: %d | Rw: %d" % (ep_cnt, sum(viz_rewards) / 100))
+                viz_rewards.clear()
 
         # select an action
         action = agent.act(obs, reward, agent_done, is_training=True)
@@ -46,19 +46,17 @@ def train_our_agent(name, endpoints, role, visualizer, cmdl):
 
         viz_rewards.append(reward)
 
-        agent.inject_summaries(step)
-
     elapsed_time = time.time() - start_time
     print("Finished in %.2f seconds at %.2ffps." % (
         elapsed_time, max_training_steps / elapsed_time))
 
 
-def run_alien_agent(name, endpoints, role):
-    assert len(endpoints) >= 2, 'Not enough clients (need at least 2)'
+def run_alien_agent(name, role, cmdl):
+    assert len(cmdl.endpoints) >= 2, 'Not enough clients (need at least 2)'
 
     builder = PigChaseSymbolicStateBuilder()
     # builder = PigChaseTopDownStateBuilder()
-    env = PigChaseEnvironment(parse_clients_args(endpoints), builder,
+    env = PigChaseEnvironment(parse_clients_args(cmdl.endpoints), builder,
                               role=role, randomize_positions=True)
 
     agent = PigChaseChallengeAgent(name)

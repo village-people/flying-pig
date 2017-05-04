@@ -1,13 +1,11 @@
 # Bitdefender, 2107
 
-from estimators.atari_net import AtariNet
+from estimators.pig_chase import TopDown
 from estimators.mini_net import MiniNet
-from estimators.catch_net import CatchNet
 
 ESTIMATORS = {
-    "atari": AtariNet,
     "mini": MiniNet,
-    "catch": CatchNet
+    "top_down": TopDown
 }
 
 

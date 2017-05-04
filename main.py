@@ -14,11 +14,10 @@ if __name__ == "__main__":
 
     threads = [
         # alien's thread
-        Thread(target=run_alien_agent, args=("Agent_1", args.endpoints, 0)),
+        Thread(target=run_alien_agent, args=("Agent_1", 0, args)),
 
         # our agent's thread
-        Thread(target=train_our_agent, args=("Agent_2", args.endpoints, 1,
-                                             False, args))
+        Thread(target=train_our_agent, args=("Agent_2", 1, args))
     ]
 
     for t in threads:
