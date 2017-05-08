@@ -28,6 +28,7 @@ Clone the project: `https://github.com/Microsoft/malmo`.
 Download xs3p.xsl from this repo and copy to ..malmo/build/Schemas & malmo/Schemas
 
 ```
+ export PYTHONPATH=/path/to/malmo/build/install/Python_Examples/
 export MALMO_XSD_PATH=/path/to/malmo/Schemas
 
 cd malmo
