@@ -42,5 +42,6 @@ cmake .. -DUSE_PYTHON_VERSIONS=3.6 -DINCLUDE_LUA=OFF -DINCLUDE_JAVA=OFF -DINCLUD
 
 make install
 ```
+Launch Malmo: ./launchClient.sh -port 10000
 
 pip install -e git+https://github.com/Microsoft/malmo-challenge#egg=malmopy
