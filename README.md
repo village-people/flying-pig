@@ -110,6 +110,7 @@ You can evaluate our trained model with: `python test_challenge.py`
 ### Video
 
 [Link to video](https://youtu.be/NI3nltaqyE4)
+
 [Screencapture](https://youtu.be/GQqdl3YPQm0)
 
 ### Training curves for Actor-Critic with auxiliary tasks
