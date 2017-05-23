@@ -1,0 +1,77 @@
+general:
+  batch_size: &batch_size 800
+  use_cuda: &use_cuda yes
+  seed: 0
+  report_freq: 5
+  save_folder: experiments
+  shortcut: True
+
+envs:
+  minecraft:
+    use: no
+    wait_between_agents: 1
+    ports: ['127.0.0.1:10000', '127.0.0.1:10001']
+    randomize_positions: yes
+    p_focus: 0.7
+  simulated:
+    batch_size: *batch_size
+    use_cuda: *use_cuda
+    agent0_builder: Simple
+    agent1_builder: VillagePeople18Binary
+    move_final_state: yes
+    visualize: no
+    use: yes
+    p_focus: 0.7
+    pig_max_moves: 0.01
+
+model: &model
+  shared: no
+  transition_memory: 10
+  name: &name ActorCriticNet
+  auxiliary_tasks: [["time_step", 0.004], ["game_ends", 0.05], ["noise", 0], ["next_reward", 1], ["next_state_depth", 1]]
+  load: "experiments/VillagePeople_fine_tuned.tar"
+  saving:
+    name: *name
+    save_folder: experiments
+    save_prefix: test_aux
+
+agent: &agent
+  name: "Agent_2"
+  type: "ActorCritic_Aux"
+  role: 1
+  model: *model
+  exploration: [["constant", 0.1, [.6]], ["constant", 0.1, [0.1]], ["linear", 0.8, [1.0, 0.005, 12500]]]
+
+alien: &alien
+  name: "Agent_1"
+  role: 0
+  random:
+    weight: 1
+
+training:
+  episodes_no: &episodes_no 10000
+  max_step_no: 25
+  algorithm: Adam
+  gamma: 0.99
+  algorithm_args:
+    lr: 0.002
+
+evaluation:
+  malmo:
+    use: no
+    num_threads: 2
+    use_cuda: *use_cuda
+    clients:
+    start_at: 0
+    stop_at: *episodes_no
+    frequency: 102400
+    episodes: 100
+    ports: [10002, 10003]
+    model: *model
+  artificial:
+    use: no
+    frequency: 102400
+    episodes: 100
+    model: *model
+  during_training:
+    truncate: no
