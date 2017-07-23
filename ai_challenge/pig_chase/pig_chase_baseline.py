@@ -44,7 +44,7 @@ sys.path.insert(0, os.getcwd())
 sys.path.insert(1, os.path.join(os.path.pardir, os.getcwd()))
 
 BASELINES_FOLDER = 'results/baselines/pig_chase/%s/%s'
-EPOCH_SIZE = 100
+EPOCH_SIZE = 2
 
 
 def agent_factory(name, role, baseline_agent, clients, max_epochs,

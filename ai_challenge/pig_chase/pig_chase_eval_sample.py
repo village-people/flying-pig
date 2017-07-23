@@ -22,7 +22,7 @@
 # =====================================================================
 
 from common import ENV_AGENT_NAMES
-from evaluation import PigChaseEvaluator
+from evaluation_save_full import PigChaseEvaluator
 from environment import PigChaseTopDownStateBuilder
 from malmopy.agent import RandomAgent
 
@@ -30,7 +30,7 @@ from malmopy.agent import RandomAgent
 if __name__ == '__main__':
     # Warn for Agent name !!!
 
-    clients = [('172.19.3.235', 10000), ('172.19.3.235', 10001)]
+    clients = [('127.0.0.1', 10000), ('127.0.0.1', 10001)]
     agent = RandomAgent(ENV_AGENT_NAMES[1], 3)
 
     eval = PigChaseEvaluator(clients, agent, agent, PigChaseTopDownStateBuilder())

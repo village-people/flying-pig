@@ -1,26 +1,30 @@
 # Copyright (c) 2017 Microsoft Corporation.
 #
-# Permission is hereby granted, free of charge, to any person
-# obtaining a copy of this software and associated documentation files
-# (the "Software"), to deal in the Software without restriction,
-# including without limitation the rights to use, copy, modify, merge,
-# publish, distribute, sublicense, and/or sell copies of the Software,
-# and to permit persons to whom the Software is furnished to do so,
-# subject to the following conditions:
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+# documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+#  rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
+# and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 #
-# The above copyright notice and this permission notice shall be
-# included in all copies or substantial portions of the Software.
+# The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+# the Software.
 #
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
-# BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
-# ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+# THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+#  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-# ====================================================================
+# ===================================================================================================================
 
+"""
+================================================================================
+Modifications:
+
+Run just agent_100k
+Save reward / step
+Run for 500 Epoch
+Save file result file directly to
+================================================================================
+"""
 import os
 import sys
 from time import sleep
@@ -33,7 +37,6 @@ from environment import PigChaseEnvironment, PigChaseSymbolicStateBuilder
 # Enforce path
 sys.path.insert(0, os.getcwd())
 sys.path.insert(1, os.path.join(os.path.pardir, os.getcwd()))
-from numpy import mean, var
 
 
 class PigChaseEvaluator(object):
@@ -43,8 +46,11 @@ class PigChaseEvaluator(object):
         self._clients = clients
         self._agent_100k = agent_100k
         self._agent_500k = agent_500k
+        print('======================================================')
+        print("\n\nWill run experiment only for model of 'agent_100k'! \n\n")
+        print('======================================================')
         self._state_builder = state_builder
-        self._accumulators = {'100k': [], '500k': []}
+        self._accumulators = {'100k': []}
 
     def save(self, experiment_name, filepath):
         """
@@ -63,13 +69,9 @@ class PigChaseEvaluator(object):
 
         from json import dump
         from os.path import exists, join, pardir, abspath
-        from os import makedirs
-        from numpy import mean, var
 
         # Compute metrics
-        metrics = {key: {'mean': mean(buffer),
-                         'var': var(buffer),
-                         'count': len(buffer)}
+        metrics = {key: {"info": buffer}
                    for key, buffer in self._accumulators.items()}
 
         metrics['experimentname'] = experiment_name
@@ -97,17 +99,17 @@ class PigChaseEvaluator(object):
         p = Process(target=run_challenge_agent, args=(self._clients,))
         p.start()
         sleep(5)
-        agent_loop(1, self._agent_100k, env, self._accumulators['100k'])
+        agent_loop(self._agent_100k, env, self._accumulators['100k'])
         p.terminate()
 
-        print('==================================')
-        print('Starting evaluation of Agent @500k')
-
-        p = Process(target=run_challenge_agent, args=(self._clients,))
-        p.start()
-        sleep(5)
-        agent_loop(1, self._agent_500k, env, self._accumulators['500k'])
-        p.terminate()
+        # print('==================================')
+        # print('Starting evaluation of Agent @500k')
+        #
+        # p = Process(target=run_challenge_agent, args=(self._clients,))
+        # p.start()
+        # sleep(5)
+        # agent_loop(self._agent_500k, env, self._accumulators['500k'])
+        # p.terminate()
 
 
 def run_challenge_agent(clients):
@@ -115,28 +117,23 @@ def run_challenge_agent(clients):
     env = PigChaseEnvironment(clients, builder, role=0,
                               randomize_positions=True)
     agent = PigChaseChallengeAgent(ENV_AGENT_NAMES[0])
-    agent_loop(0, agent, env, None)
+    agent_loop(agent, env, None)
 
 
-def agent_loop(role, agent, env, metrics_acc):
+def agent_loop(agent, env, metrics_acc):
+    # EVAL_EPISODES = 100
     EVAL_EPISODES = 2
     agent_done = False
     reward = 0
     episode = 0
     obs = env.reset()
-    import time
-    start = time.time()
+    step = 0
 
-    rewards = 0
-    nr_step = 0
-
-    train = False
-    r_game = 0
     while episode < EVAL_EPISODES:
         # check if env needs reset
         if env.done:
-            print(time.time() - start)
-            start = time.time()
+            print('Episode %d (%.2f)%%' % (
+            episode, (episode / EVAL_EPISODES) * 100.))
 
             obs = env.reset()
             while obs is None:
@@ -146,28 +143,14 @@ def agent_loop(role, agent, env, metrics_acc):
                 obs = env.reset()
 
             episode += 1
-            if role == 1:
-                print('Episode %d (%.2f)%% MeanR %.4f Mean_r_step %.4f ' % (
-                    episode, (episode / EVAL_EPISODES) * 100.,
-                    rewards / episode,
-                    rewards / nr_step))
-
-                print("Metrics: Mean: {} Var: {} count: {}".format(
-                    mean(metrics_acc), var(metrics_acc), len(metrics_acc)
-                ))
-
-                print("Last Game score: ---> {}".format(r_game))
-                r_game = 0
+            step = 0
 
         # select an action
-        action = agent.act(obs, reward, agent_done, is_training=False)
-
+        action = agent.act(obs, reward, agent_done, is_training=True)
         # take a step
         obs, reward, agent_done = env.do(action)
 
-        nr_step += 1
-        rewards += reward
-        r_game += reward
-
         if metrics_acc is not None:
-            metrics_acc.append(reward)
+            metrics_acc.append((episode, step, reward))
+
+        step += 1

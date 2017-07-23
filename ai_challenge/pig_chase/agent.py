@@ -29,7 +29,7 @@ from collections import namedtuple
 from tkinter import ttk, Canvas, W
 
 import numpy as np
-from .common import visualize_training, Entity, ENV_TARGET_NAMES, \
+from common import visualize_training, Entity, ENV_TARGET_NAMES, \
     ENV_ENTITIES, ENV_AGENT_NAMES, \
     ENV_ACTIONS, ENV_CAUGHT_REWARD, ENV_BOARD_SHAPE
 from six.moves import range

@@ -28,7 +28,7 @@ import re
 
 import numpy as np
 
-from .common import ENV_ACTIONS, ENV_BOARD, ENV_ENTITIES, \
+from common import ENV_ACTIONS, ENV_BOARD, ENV_ENTITIES, \
     ENV_BOARD_SHAPE, ENV_AGENT_NAMES
 
 from MalmoPython import MissionSpec
